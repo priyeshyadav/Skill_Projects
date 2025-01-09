@@ -272,6 +272,21 @@ ON Cu_Data.Cat_id = Film_Data.Film_Cat_id
 WHERE Cu_Data.Films_Rented_in_Category = Film_Data.No_of_Films;
 
 
+more optimised - 
+SELECT C.customer_id
+FROM `Cineflix.customer` C
+JOIN `Cineflix.rental` R ON C.customer_id = R.customer_id
+JOIN `Cineflix.inventory` I ON R.inventory_id = I.inventory_id
+JOIN `Cineflix.film_category` FC ON I.film_id = FC.film_id
+GROUP BY C.customer_id, FC.category_id
+HAVING COUNT(DISTINCT I.film_id) = (
+  SELECT COUNT(DISTINCT F.film_id)
+  FROM `Cineflix.film_category` F
+  WHERE F.category_id = FC.category_id
+);
+
+
+
 21. Identify the most frequently rented film in each store.
 22. Generate a list of customers whose rental payments are above the average payment amount.
 23. Find the 10 most expensive films (replacement cost) that have been rented and calculate their total revenue.
