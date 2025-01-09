@@ -161,10 +161,117 @@ group by 1
 order by 2 desc;
 
 16. Calculate the average rental rate of films in each language.
+
+select L.name, coalesce (round(avg(F.rental_rate),2),0) as Average_Rental_Rate
+from `Cineflix.language` L
+join `Cineflix.film` F on L.language_id = F.language_id
+group by L.name
+order by 1;
+
+
 17. Identify customers who have not rented any films in the last six months.
+# A simple join wont help in this scnario as we need to ensure coupls of things 
+#1- Customer who has never rented anything should also be included , this data we can lose after applying where clause.
+#2- Single a single customer can have many rentals, he should be only inlcuded in the final input if all of his rentals are ooder than 6 months.
+# A customer should not be included if one of the rental is more than 6 month old while other are recent.
+# hence below query is a bad example bause it doest handle customer who has multiple order some of whicg are recent while some of them are 6 months old
+            [Query] select  distinct concat(C.first_name,' ', C.last_name) as Full_name
+            from `Cineflix.customer` C
+            left join `Cineflix.rental` R on C.customer_id = R.customer_id
+            where R.rental_date <= timestamp_sub(current_timestamp(), interval 180 DAY) or R.customer_id is null;
+            [/Query]
+
+proper Answer - 
+select  distinct concat(C.first_name,' ', C.last_name) as Full_name
+from `Cineflix.customer` C
+left join `Cineflix.rental` R on C.customer_id = R.customer_id
+group by Full_name, R.rental_date
+having sum(
+  case 
+  when R.rental_date > timestamp_sub(current_timestamp(), interval 180 DAY) 
+  then 1 
+  else 0 
+  end )=0;
+
+
 18. Find the staff member who has processed the highest number of rental transactions.
-19. Determine the number of films rented per month for the past year.
+
+select concat(S.first_name,' ',S.last_name) as Staff_Employee, count(P.payment_id) as Rental_Transaction
+from `Cineflix.staff` S 
+join `Cineflix.payment` P on S.staff_id = P.staff_id
+where P.amount > 0
+group by Staff_Employee
+order by 2 desc
+limit 1;
+
+
+select concat(S.first_name,' ',S.last_name) as Staff_Employee
+from `Cineflix.staff` S 
+join `Cineflix.payment` P on S.staff_id = P.staff_id
+where P.amount > 0
+group by Staff_Employee, P.rental_id
+having count(P.rental_id) = 
+(
+  Select count(P1.rental_id)
+from `Cineflix.staff` S1 
+join `Cineflix.payment` P1 on S1.staff_id = P1.staff_id
+where P1.amount > 0
+group by S1.first_name, P1.rental_id
+order by 1 desc
+limit 1
+)
+
+
+SELECT CONCAT(S.first_name, ' ', S.last_name) AS Staff_Employee
+FROM `Cineflix.staff` S
+JOIN `Cineflix.payment` P ON S.staff_id = P.staff_id
+WHERE P.amount > 0
+GROUP BY S.staff_id, S.first_name, S.last_name
+HAVING COUNT(P.rental_id) = (
+  SELECT MAX(rental_count)
+  FROM (
+    SELECT S1.staff_id, COUNT(P1.rental_id) AS rental_count
+    FROM `Cineflix.staff` S1
+    JOIN `Cineflix.payment` P1 ON S1.staff_id = P1.staff_id
+    WHERE P1.amount > 0
+    GROUP BY S1.staff_id
+  ) AS staff_rentals
+);
+
+
+19. Determine the number of films rented per month per year.
+
+select extract(YEAR from R.rental_date) as YEAR,extract(MONTH from R.rental_date)as MONTH ,count(*) as Rental_per_month
+from `Cineflix.rental` R
+group by 1, 2
+Order by 1 Desc, 2 desc;
+
+
 20. Retrieve the details of customers who have rented all the films in a specific category.
+
+SELECT DISTINCT Cu_Data.Cu_id 
+FROM (
+  SELECT 
+    C.customer_id AS Cu_id, 
+    F.category_id AS Cat_id, 
+    COUNT(DISTINCT I.film_id) AS Films_Rented_in_Category
+  FROM `Cineflix.customer` C
+  JOIN `Cineflix.rental` R ON C.customer_id = R.customer_id
+  JOIN `Cineflix.inventory` I ON R.inventory_id = I.inventory_id
+  JOIN `Cineflix.film_category` F ON I.film_id = F.film_id
+  GROUP BY C.customer_id, F.category_id
+) AS Cu_Data
+JOIN (
+  SELECT 
+    F.category_id AS Film_Cat_id, 
+    COUNT(DISTINCT F.film_id) AS No_of_Films
+  FROM `Cineflix.film_category` F
+  GROUP BY F.category_id
+) AS Film_Data 
+ON Cu_Data.Cat_id = Film_Data.Film_Cat_id
+WHERE Cu_Data.Films_Rented_in_Category = Film_Data.No_of_Films;
+
+
 21. Identify the most frequently rented film in each store.
 22. Generate a list of customers whose rental payments are above the average payment amount.
 23. Find the 10 most expensive films (replacement cost) that have been rented and calculate their total revenue.
