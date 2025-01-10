@@ -285,13 +285,76 @@ HAVING COUNT(DISTINCT I.film_id) = (
   WHERE F.category_id = FC.category_id
 );
 
-
-
 21. Identify the most frequently rented film in each store.
+
+Select Table3.Store_Id, F.title
+from (
+SELECT Table1.Store_Id as Store_Id, Table1.File_Id as File_Id FROM 
+(select I.store_id as Store_Id, I.film_id as File_Id, count(R.rental_id) as Rental_Count
+from `Cineflix.rental` R 
+join `Cineflix.inventory` I on R.inventory_id = I.inventory_id
+group by I.store_id, I.film_id ) as Table1
+join (
+select SFRC.Store_Id as Store_Id, max(SFRC.Rental_Count) as SFMRC
+from (
+select I.store_id as Store_Id, I.film_id as File_Id, count(R.rental_id) as Rental_Count
+from `Cineflix.rental` R 
+join `Cineflix.inventory` I on R.inventory_id = I.inventory_id
+group by I.store_id, I.film_id ) as SFRC
+group by SFRC.Store_Id ) as Table2
+on Table1.Store_Id = Table2.Store_Id
+where Table1.Rental_Count = Table2.SFMRC 
+) as Table3
+join `Cineflix.film` F on Table3.File_Id = F.film_id
+
+
 22. Generate a list of customers whose rental payments are above the average payment amount.
+
+select concat(C.first_name,' ',C.last_name) as Customer_Name
+#,sum(P.amount) as Rental_Amount
+from `Cineflix.customer` C
+join `Cineflix.rental` R on C.customer_id = R.customer_id
+join `Cineflix.payment` P on CAST (R.rental_id as string) = P.rental_id
+group by Customer_Name
+having sum(P.amount) > avg(P.amount)
+order by sum(P.amount) desc
+limit 10;
+
 23. Find the 10 most expensive films (replacement cost) that have been rented and calculate their total revenue.
+
+select F.title, F.replacement_cost, round(sum(P.amount),2) as Rental_Amount
+from `Cineflix.film` F
+join `Cineflix.inventory` I on F.film_id = I .film_id
+join `Cineflix.rental` R on I.inventory_id = R.inventory_id
+join `Cineflix.payment` P on CAST ( R.rental_id as string ) = P.rental_id
+group by F.title, F.replacement_cost
+order by 2 Desc,1
+limit 10;
+
+
 24. Determine the category of films that has the highest average rental duration.
+
+select C.name
+#, round(avg(F.rental_duration),4) as Rental_Duration
+from `Cineflix.category` C
+join `Cineflix.film_category` FC on C.category_id = FC.category_id
+join `Cineflix.film` F on FC.film_id = F.film_id
+group by C.name
+order by avg(F.rental_duration) Desc
+limit 1;
+
 25. Retrieve the details of films rented by customers from a specific city.
+
+select CI.city, F.title, count(R.rental_id) as Rental_Count
+from `Cineflix.customer` C 
+join `Cineflix.address` A on C.address_id = C.address_id
+join `Cineflix.city` CI on A.city_id = CI.city_id
+join `Cineflix.rental` R on C.customer_id = R.customer_id
+join `Cineflix.inventory` I on R.inventory_id = I.inventory_id
+join `Cineflix.film` F on I.film_id = F.film_id
+group by CI.city, F.title
+order by 3 desc;
+
 26. Find the store with the lowest rental revenue and provide its location.
 27. Calculate the total amount of late fees collected for overdue films in the past year.
 28. List all films that have been rented by customers who reside in the same city as the store.
