@@ -356,8 +356,23 @@ group by CI.city, F.title
 order by 3 desc;
 
 26. Find the store with the lowest rental revenue and provide its location.
+
+select S.store_id, A.address, sum(P.amount) as Rental_Amt
+from `Cineflix.payment` P 
+join `Cineflix.rental` R ON cast (P.rental_id as string) = cast (R.rental_id as string)
+join `Cineflix.inventory` I on R.inventory_id = I.inventory_id
+join `Cineflix.store` S on I.store_id = S.store_id
+join `Cineflix.address` A on S.address_id = A.address_id
+group by S.store_id, A.address
+Order by 3 
+limit 1;
+
+
 27. Calculate the total amount of late fees collected for overdue films in the past year.
 28. List all films that have been rented by customers who reside in the same city as the store.
+
+
+
 29. Retrieve the names of staff members who have never processed a rental transaction.
 30. Identify the language with the most films available in the inventory.
 31. Find the average rental revenue generated per customer in each store.
