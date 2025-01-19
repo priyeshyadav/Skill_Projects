@@ -369,9 +369,51 @@ limit 1;
 
 
 27. Calculate the total amount of late fees collected for overdue films in the past year.
+
+SELECT SUM(p.amount) AS total_late_fees
+FROM `Cineflix.payment` p
+JOIN `Cineflix.rental` r ON p.rental_id = cast(r.rental_id as string)
+JOIN `Cineflix.inventory` i ON r.inventory_id = i.inventory_id
+JOIN `Cineflix.film` f ON i.film_id = f.film_id
+WHERE r.return_date IS NOT NULL 
+  AND DATE_DIFF(r.return_date, r.rental_date, DAY) > f.rental_duration
+  AND cast (p.payment_date as datetime) >= DATE_SUB(current_datetime(), INTERVAL 20 YEAR);
+#Used 20 YEAR as we dont have 1 year old data
+
+
 28. List all films that have been rented by customers who reside in the same city as the store.
+
+SELECT DISTINCT FT.title
+from `Cineflix.customer` CU
+join `Cineflix.address` AD on CU.address_id = AD.address_id
+join `Cineflix.rental` RE on CU.customer_id = RE.customer_id
+join `Cineflix.inventory` I on RE.inventory_id = I.inventory_id
+join `Cineflix.film_text` FT on I.film_id = FT.film_id
+#order by 2 desc
+where AD.city_id in 
+#(300, 576)
+(
+SELECT distinct AD.city_id
+from `Cineflix.store` SO
+join `Cineflix.address` AD on SO.address_id = AD.address_id )
+
 29. Retrieve the names of staff members who have never processed a rental transaction.
+
+select concat(ST.first_name,' ',ST.last_name)
+from `Cineflix.rental` RE 
+right join `Cineflix.staff` ST on RE.staff_id = ST.staff_id
+where RE.staff_id is null;
+
+
 30. Identify the language with the most films available in the inventory.
+
+select L.name, count(*) as Film_Count
+from `Cineflix.inventory` Inv 
+join `Cineflix.film` F on Inv.film_id = F.film_id
+join `Cineflix.language`L on F.language_id = L.language_id
+group by 1
+order by 2 Desc;
+
 31. Find the average rental revenue generated per customer in each store.
 32. Determine the number of active and inactive customers per store.
 33. List the customers who rented films on their account's creation date.
