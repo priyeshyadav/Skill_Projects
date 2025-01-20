@@ -415,19 +415,163 @@ group by 1
 order by 2 Desc;
 
 31. Find the average rental revenue generated per customer in each store.
+Select CU.customer_id, S.store_id, round(avg(P.amount),2) as Average_Revenue
+from `Cineflix.customer` CU
+join `Cineflix.payment` P on CU.customer_id = P.customer_id
+join `Cineflix.store` S on CU.store_id = S.store_id
+group by 1, 2
+order by 1,3 desc; 
+
 32. Determine the number of active and inactive customers per store.
+
+select store_id,
+sum(case when active = 1 then 1 else 0 end) as Active_user,
+sum(case when active = 0 then 1 else 0 end) as Inactive_user
+from `Cineflix.customer`
+where store_id is not null
+group by 1;
+
 33. List the customers who rented films on their account's creation date.
-34. Calculate the average rental duration for films released in the last five years.
+
+select distinct concat(CU.first_name,' ',CU.last_name) as Customer_Name
+from `Cineflix.customer` CU
+join `Cineflix.rental` R on CU.customer_id = R.customer_id
+where CU.create_date = R.rental_date 
+#Since there is no such data, output is no rows.
+
+34. Calculate the average rental duration for films released in the last twenty five years.
+
+select release_year, avg(rental_duration) as Average_Rental_Duration
+from `Cineflix.film`
+where release_year >= extract(YEAR FROM date_sub(current_date(), interval 25 year))
+group by 1;
+
+
 35. Retrieve the names of customers who rented films in more than one language.
+
+SELECT DISTINCT concat(CU.first_name,' ', CU.last_name) as Customer_name
+FROM `Cineflix.customer` CU
+JOIN `Cineflix.rental` R ON CU.customer_id = R.customer_id
+JOIN `Cineflix.inventory` I ON R.inventory_id = I.inventory_id
+JOIN `Cineflix.film` F ON I.film_id = F.film_id
+GROUP BY 1
+HAVING COUNT(DISTINCT F.language_id) > 1
+ORDER BY 1;
+#No Rows as we only have data with 1 language
+
 36. Identify the films with the longest rental durations and their corresponding categories.
+
+          Logic 1: Where we consider that longest rental duration is identified by file table directly.
+          select distinct C.name, F.rental_duration
+          from `Cineflix.film` F
+          join `Cineflix.film_category` FC on F.film_id = FC.film_id
+          join `Cineflix.category` C on FC.category_id = C.category_id
+          where F.rental_duration = (select max(rental_duration) from `Cineflix.film`)
+          order by 1, 2 Desc;
+
+
+        Logic 2: Where we consider that we need to identify the longest rental duration by multiplying rental_duration & no of times movie has been rented.
+        SELECT F.film_id, F.title, F.rental_duration, 
+              COUNT(R.rental_id) AS total_rentals,
+              F.rental_duration * COUNT(R.rental_id) AS total_rental_duration
+        FROM `Cineflix.film` F
+        JOIN `Cineflix.inventory` I ON F.film_id = I.film_id
+        JOIN `Cineflix.rental` R ON I.inventory_id = R.inventory_id
+        GROUP BY F.film_id, F.title, F.rental_duration
+        ORDER BY total_rental_duration DESC
+        LIMIT 1;
 37. Determine the top 5 cities with the highest rental revenue.
+
+select C.city
+from `Cineflix.customer` CU 
+join `Cineflix.address` AD on CU.address_id = AD.address_id
+join `Cineflix.city` C on AD.city_id = C.city_id
+join `Cineflix.payment` P on CU.customer_id = P.customer_id
+group by 1
+order by round(sum(P.amount),2) Desc
+limit 5;
+
+select city from (
+select C.city, 
+dense_rank() over (order by sum(P.amount) desc) as Revenue_Rank,
+round(sum(P.amount),2) as Total_Rental 
+from `Cineflix.customer` CU 
+join `Cineflix.address` AD on CU.address_id = AD.address_id
+join `Cineflix.city` C on AD.city_id = C.city_id
+join `Cineflix.payment` P on CU.customer_id = P.customer_id
+group by 1
+#order by 2
+) 
+tbl1
+where tbl1.Revenue_Rank <=5
+
+
 38. List the customers who rented the most expensive film (highest replacement cost).
+
+select distinct concat(CU.first_name, ' ', CU.last_name) as Customer_Name
+from `Cineflix.customer` CU 
+join `Cineflix.rental` R on CU.customer_id = R.customer_id
+join `Cineflix.inventory` I on R.inventory_id = I.inventory_id
+join `Cineflix.film` F on I.film_id = F.film_id
+where F.replacement_cost = ( select max(replacement_cost) from `Cineflix.film` ) 
+
+
 39. Find the stores that rented out all films in their inventory at least once.
+
+SELECT S.store_id
+FROM `Cineflix.store` S
+JOIN `Cineflix.inventory` I ON S.store_id = I.store_id
+LEFT JOIN `Cineflix.rental` R ON I.inventory_id = R.inventory_id
+GROUP BY S.store_id
+HAVING COUNT(DISTINCT I.film_id) = COUNT(DISTINCT CASE WHEN R.rental_id IS NOT NULL THEN I.film_id END);
+
 40. Retrieve the names of customers who rented films but did not make any payments.
+
+SELECT DISTINCT C.customer_id, CONCAT(C.first_name, ' ', C.last_name) AS Customer_Name
+FROM `Cineflix.customer` C
+JOIN `Cineflix.rental` R ON C.customer_id = R.customer_id
+LEFT JOIN `Cineflix.payment` P ON R.rental_id = P.rental_id
+GROUP BY C.customer_id, C.first_name, C.last_name
+HAVING COUNT(P.payment_id) = 0;
+
+
 41. Generate a report of the total number of rentals processed by each staff member in the last year.
+
+select concat(S.first_name,' ',S.last_name) as Staff_Employee,coalesce (count(R.rental_id),0) as Total_Rental
+from `Cineflix.staff` S
+left join `Cineflix.rental` R on S.staff_id = R.staff_id
+where cast(R.rental_date as date) >= date_sub(current_date(), INTERVAL 1 YEAR)
+or R.staff_id is null
+group by 1
+order by 2 desc , 1;
+#No rows as wel dont have such data, Use INTERVAL 25 YEAR to see output
+
 42. Identify the customers who rented films in a specific language more than 3 times.
+
+select concat(C.first_name,' ',C.last_name) as Customer_Name , F.language_id, count(R.rental_id) as Rental_Count
+#,Count(distinct F.language_id) as Language_Count
+from `Cineflix.customer` C
+join `Cineflix.rental` R on C.customer_id = R.customer_id
+join `Cineflix.inventory` I on R.inventory_id = I.inventory_id
+join `Cineflix.film` F on I.film_id = F.film_id
+join `Cineflix.language` L on F.language_id = L.language_id
+group by 1,2
+having count(R.rental_id) > 3;
+
+
 43. List the names of films that have been rented and returned on the same day.
+
+select distinct F.title
+#,R.return_date, R.rental_date
+from `Cineflix.film` F
+join `Cineflix.inventory` I on F.film_id = I.film_id
+join `Cineflix.rental` R on I.inventory_id = R.inventory_id
+where R.rental_date = R.return_date;
+#We dont have such data
+
 44. Calculate the percentage of active customers who have rented films in the past month.
+
+
 45. Find the most popular film in each category and store based on rental count.
 46. Determine the number of films rented per staff member in each store.
 47. Identify the cities where the average rental duration is below the overall average.
