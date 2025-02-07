@@ -571,10 +571,17 @@ where R.rental_date = R.return_date;
 
 44. Calculate the percentage of active customers who have rented films in the past month.
 
+select concat(round(count(distinct C.customer_id) / (select count(distinct customer_id) from `Cineflix.customer`)*100,1),'%') as Customer_Percentage
+from `Cineflix.customer` C
+left join `Cineflix.rental` R on C.customer_id = R.customer_id
+where C.active = 1
+and cast(R.rental_date as date) >= date_sub(cast(current_date() as date), interval 20 year)
 
 45. Find the most popular film in each category and store based on rental count.
 46. Determine the number of films rented per staff member in each store.
 47. Identify the cities where the average rental duration is below the overall average.
+
+
 48. Retrieve the names of films rented by customers who have made payments above $100.
 
 select distinct FC.title
