@@ -1,0 +1,33 @@
+1.
+select N1.title as Title_1, N2.title as Title_2, 
+#N1.release_year, N2.release_year, N1.genre, N2.genre, N1.platform , N2.platform 
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on N1.release_year = N2.release_year
+and N1.genre = N2.genre and N1.platform != N2.platform and N1.title != N2.title
+
+2. 
+select distinct N1.title as Title_1,
+#N2.title, N1.release_year, N2.release_year
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on N1.release_year != N2.release_year and N1.title = N2.title
+
+3.
+select title,min(added_to_platform_date) as First_Trending_Date, max(added_to_platform_date) as Last_Trending_Date from `netflix_data.netflix`
+where is_trending = true
+group by title
+having count(*) >= 2 ;
+
+4.
+select distinct N1.title as title
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on N1.genre = N2.genre and (N1.views + N1.likes - N1.dislikes) = (N2.views + N2.likes - N2.dislikes)
+and N1.title != N2.title
+where N1.type = 'Movie' or N2.type = 'Movie'
+
+
+5.
+select distinct N1.title as title_1, N2.title as title_2
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on N1.duration = N2.duration and N1.platform != N2.platform 
+and N1.title != N2.title
+where N1.type = 'Movie' or N2.type = 'Movie';
