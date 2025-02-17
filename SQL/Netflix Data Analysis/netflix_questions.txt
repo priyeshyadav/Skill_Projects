@@ -1,0 +1,50 @@
+1. Find pairs of titles released in the same year, have the same genre, but are from different platforms.
+2. Identify movies or shows with the same title but different release years.
+3. Retrieve titles that have been trending at least twice and find their first and last trending dates.
+4. Find movies that share the same genre and have similar engagement scores (views + likes - dislikes).
+5. Identify pairs of movies that have the same duration but different platforms.
+6. Retrieve titles with nearly the same number of views (difference of fewer than 1000 views).
+7. Find out which countries have the highest number of similar movies released in the same year.
+8. Determine platform pairs that share the most common titles.
+9. Identify titles that have been released in multiple languages by comparing entries in the dataset.
+10. Find the oldest movie or show that has a newer version with the same title.
+11. Identify movies with identical engagement scores but different countries of release.
+12. Find all TV shows that have at least one movie of the same name in the dataset.
+13. Identify all genres that have at least two trending titles in the same year.
+14. Find all movies that were trending together at least once.
+15. Identify movies or shows that have been re-released with a different rating.
+16. Find movies released on the same platform, in the same year, with a similar number of likes.
+17. Identify movies that have similar durations but different genres.
+18. Retrieve pairs of movies that were released in the same country and have similar engagement.
+19. Identify trending titles that were first added to the platform in the same month and year.
+20. Find all movies that were released in the same country, have the same language, and a rating difference of only one level.
+21. Retrieve the most common pair of movies that are often trending together.
+22. Find all movies that were released in the same decade and have nearly the same number of views.
+23. Identify pairs of movies that have nearly the same number of subscribers but belong to different platforms.
+24. Find out which genres tend to have the most similar movies released in the same year.
+25. Retrieve all movies that have nearly the same number of dislikes as another movie from a different country.
+26. Identify the most common language pairs in movies that share the same genre.
+27. Find pairs of movies released in different countries but with the same number of subscribers.
+28. Identify all movies with at least two different records in the dataset due to re-releases or edits.
+29. Retrieve pairs of trending titles that were first introduced in different decades.
+30. Identify movies that were trending together in at least three different years.
+31. Find out which platform has the highest number of repeated titles across years.
+32. Identify pairs of movies that were added to platforms within the same month but have different engagement scores.
+33. Find out which platforms share the most titles with identical names but different years.
+34. Identify movies that have similar engagement scores but were released in different decades.
+35. Retrieve all pairs of movies where one is a sequel to another based on year and similar title.
+36. Identify the most common title across platforms by using self-joins.
+37. Find all movies that were added to platforms more than once due to changes in metadata.
+38. Retrieve all movies that have been trending together in more than one decade.
+39. Identify movies released in the same country but on different platforms with similar total engagement.
+40. Find all movies that have similar numbers of views but completely different genres.
+41. Identify movies with nearly the same number of likes but vastly different dislike counts.
+42. Find out which platform has the highest number of identical movies based on self-joins.
+43. Retrieve all movies that were first added to the platform in the same year and have the same rating.
+44. Identify the top 5 most common movie pairs that have similar durations but different platforms.
+45. Find all movies that have nearly the same number of subscribers but vastly different ratings.
+46. Identify pairs of movies that were first introduced on Netflix and later appeared on another platform.
+47. Retrieve movies that were released in the same country and have a nearly identical duration.
+48. Find all TV shows that have a movie version with the same title but different engagement levels.
+49. Identify all movies that were trending together exactly twice in different years.
+50. Find out which decade had the most similar movies based on engagement score and genre.
