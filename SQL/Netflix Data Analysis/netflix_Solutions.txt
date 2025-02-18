@@ -31,3 +31,91 @@ from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on N1.duration = N2.duration and N1.platform != N2.platform 
 and N1.title != N2.title
 where N1.type = 'Movie' or N2.type = 'Movie';
+
+6.
+select N1.title, N2.title, ABS(N1.views - N2.views) as View_Diff
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on N1.id != N2.id and ABS(N1.views - N2.views) < 1000
+order by 3 asc;
+
+
+7.
+with yearly_data as (
+select N1.country, N1.release_year, count(distinct N1.id) as No_of_Movies
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on N1.genre = N2.genre and N1.type = N2.type
+and N1.language = N2.language and N1.release_year = N2.release_year
+and N1.id != N2.id
+where N1.type = 'Movie' or N2.type = 'Movie'
+group by 1,2
+),
+ranked_data as (
+  select country, release_year, No_of_movies,
+  dense_rank() over(partition by release_year order by No_of_Movies desc) as rnk
+  from yearly_data
+)
+select 
+country, release_year
+from ranked_data where rnk = 1
+order by 2 DESC;
+
+8.
+/* 
+If we dont use least, greatest or case then we observe same row twice e.g 
+netflix hotstart 2000 
+& 
+hotstart netflix 2000
+*/
+
+select 
+least(N1.platform, N2.platform) as Platform1,
+greatest(N1.platform,N2.platform) as Platform2, 
+count(distinct N1.title) as common_tilte 
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 
+on N1.title = N2.title and N1.platform < N2.platform
+group by 1,2
+order by 3 desc;
+
+
+SELECT 
+    CASE WHEN N1.platform < N2.platform THEN N1.platform ELSE N2.platform END AS Platform1, 
+    CASE WHEN N1.platform < N2.platform THEN N2.platform ELSE N1.platform END AS Platform2, 
+    COUNT(DISTINCT N1.title) AS common_title 
+FROM `netflix_data.netflix` N1
+JOIN `netflix_data.netflix` N2 
+    ON N1.title = N2.title AND N1.platform < N2.platform
+GROUP BY 1,2
+ORDER BY 3 DESC;
+
+
+9.
+SELECT DISTINCT title
+FROM `netflix_data.netflix` N1
+WHERE EXISTS (
+    SELECT 1 
+    FROM `netflix_data.netflix` N2
+    WHERE N1.title = N2.title 
+    AND N1.language < N2.language
+);
+
+# IF possible we should avoid join & use EXIST, ANY, ALL 
+# N1.language < N2.language & N1.language != N2.language will result in same output but != require more opearion & cause duplicate row as N1, N2 = N2, N1
+
+select distinct N1.title
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 
+on N1.title = N2.title and N1.language < N2.language;
+
+10.
+select distinct title 
+from `netflix_data.netflix` N1
+where EXISTS (
+  select 1 from (
+select title,release_year from (
+select title, release_year,
+dense_rank() over(order by release_year asc ) as release_rank 
+from `netflix_data.netflix`
+) tbl1 where release_rank = 1) N2
+where N1.title = N2.title and  
+N1.release_year > N2.release_year);
