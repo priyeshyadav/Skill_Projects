@@ -119,3 +119,48 @@ from `netflix_data.netflix`
 ) tbl1 where release_rank = 1) N2
 where N1.title = N2.title and  
 N1.release_year > N2.release_year);
+
+11.
+select * from 
+`netflix_data.netflix` N1 
+join `netflix_data.netflix` N2 on N1.country != N2.country
+and (N1.likes + N1.views - N1.dislikes) = (N2.likes + N2.views - N2.dislikes)
+and N1.title < N2.title
+where  N1.type = 'Movies' ;
+
+12.
+select distinct title from `netflix_data.netflix` T
+where exists
+(
+  select 1 from `netflix_data.netflix` M where T.title = M.title and M.type = 'Movie'
+)
+and T.type = 'TV Show';
+
+
+SELECT DISTINCT T.title
+FROM `netflix_data.netflix` T
+JOIN `netflix_data.netflix` M ON T.title = M.title
+WHERE T.type = 'TV Show'AND M.type = 'Movie';
+
+13.
+select distinct genre
+from `netflix_data.netflix` 
+where is_trending = true
+group by extract(YEAR from added_to_platform_date),genre
+having count(*) >=20
+
+14.
+select N1.title as Movie1, N2.title as Movie2
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+N1.added_to_platform_date = N2.added_to_platform_date
+and N1.title < N2.title
+where N1.type = 'Movie' and N2.type = 'Movie'
+and N1.is_trending = true and N2.is_trending = true;
+
+15.
+select distinct N2.title
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+N1.title = N2.title and N1.release_year < N2.release_year
+and N1.rating != N2.rating
