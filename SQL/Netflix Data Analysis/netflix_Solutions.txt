@@ -164,3 +164,71 @@ from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on 
 N1.title = N2.title and N1.release_year < N2.release_year
 and N1.rating != N2.rating
+
+16.
+select  N1.title, N2.title
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+N1.title < N2.title and N1.platform = N2.platform
+and N1.release_year = N2.release_year and N1.likes = N2.likes
+where N1.type = 'Movie' and N2.type = 'Movie';
+
+17.
+select  distinct N1.title, N2.title
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+N1.title < N2.title and N1.duration = N2.duration
+and N1.genre != N2.genre
+where N1.type = 'Movie' and N2.type = 'Movie';
+
+18.
+select  distinct N1.title, N2.title
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+N1.title < N2.title
+and N1.country = N2.country
+and (N1.likes + N1.views - N1.dislikes) = (N2.likes + N2.views - N2.dislikes)
+where N1.type = 'Movie' and N2.type = 'Movie';
+
+19.
+select  distinct N1.title, N2.title
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+N1.title < N2.title
+and format_datetime('%Y-%m',N1.added_to_platform_date) =  format_datetime('%Y-%m',N2.added_to_platform_date)
+where N1.is_trending = true and N2.is_trending = true
+
+20.
+#Since we dont have clear rating in numbers, we will assign categories a Number & write Query according to that.
+with cts_numbered_rating as (
+  select *,
+  case
+  when rating = 'G' then 1
+  when rating = 'R' then 2
+  when rating = 'PG' then 3
+  when rating = 'PG-13' then 4
+  else 5
+  end as numbered_Rating
+  from `netflix_data.netflix`
+)
+select distinct N1.title , N2.title
+from cts_numbered_rating N1
+join cts_numbered_rating N2 on 
+N1.country = N2.country
+and N1.language = N2.language
+and abs(N1.numbered_Rating - N2.numbered_Rating) = 1
+and N1.title < N2.title
+where N1.type = 'Movie' and N2.type = 'Movie'
+
+21.
+select N1.title , N2.title,
+#N1.added_to_platform_date, N1.is_trending, N2.added_to_platform_date, N2.is_trending , N1.type, N2.type
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+N1.added_to_platform_date = N2.added_to_platform_date
+and N1.title < N2.title
+Where N1.is_trending = true and N2.is_trending = true
+and N1.type = 'Movie'and N2.type = 'Movie'
+
+22.
+
