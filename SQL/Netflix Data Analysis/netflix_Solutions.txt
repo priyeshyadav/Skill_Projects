@@ -231,4 +231,11 @@ Where N1.is_trending = true and N2.is_trending = true
 and N1.type = 'Movie'and N2.type = 'Movie'
 
 22.
+# We dont have direct function to extrct DECADE from date & hence we used a little calculation.
+# Questions also asked about near same views, hence we considered the view diffrence less than 500 (Subjective)
+select N1.title, N2.title from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+cast(floor(extract(YEAR from N1.added_to_platform_date)/10)*10 as int) = cast(floor(extract(YEAR from N2.added_to_platform_date)/10)*10 as int)
+and ABS(N1.views - N2.views) < 500 and N1.title < N2.title
+where N1.type = 'Movie' AND N2.type = 'Movie';
 
