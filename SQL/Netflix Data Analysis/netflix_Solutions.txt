@@ -239,3 +239,62 @@ cast(floor(extract(YEAR from N1.added_to_platform_date)/10)*10 as int) = cast(fl
 and ABS(N1.views - N2.views) < 500 and N1.title < N2.title
 where N1.type = 'Movie' AND N2.type = 'Movie';
 
+23.
+select N1.title, N2.title from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+N1.platform != N2.platform and 
+N1.title < N2.title
+where 
+ABS(N1.subscribed_users - N2.subscribed_users) <= 500
+and N1.type = "Movie" and N2.type = 'Movie';
+
+24.
+select 
+N1.genre, N2.genre, 
+count(*) as similiar_movies
+from 
+`netflix_data.netflix` N1 join 
+`netflix_data.netflix`N2 on 
+extract(year from N1.added_to_platform_date) = extract(year from n2.added_to_platform_date)
+and N1.language = N2.language
+and N1.Genre < N2.Genre
+where 
+N1.type = 'Movie' and N2.Type = 'Movie' and 
+ABS(
+  (ifnull(cast(regexp_extract(N1.duration,r'(\d+)h') as INT64),0)*60 + ifnull(cast(regexp_extract(N1.duration,r'(\d+)m') as INT64),0))-
+  (ifnull(cast(regexp_extract(N2.duration,r'(\d+)h') as INT64),0)*60 + ifnull(cast(regexp_extract(N2.duration,r'(\d+)m') as INT64),0))
+) <=5
+group by 1,2,extract(year from N1.added_to_platform_date)
+order by 3 desc
+limit 5;
+
+-- Better Solution with CTE --
+WITH Netflix_Cleaned AS (
+    SELECT 
+        title, 
+        genre, 
+        language, 
+        type, 
+        platform, 
+        EXTRACT(YEAR FROM added_to_platform_date) AS release_year, 
+        IFNULL(CAST(REGEXP_EXTRACT(duration, r'(\d+)h') AS INT64), 0) * 60 + 
+        IFNULL(CAST(REGEXP_EXTRACT(duration, r'(\d+)m') AS INT64), 0) AS duration_minutes
+    FROM `netflix_data.netflix`
+    WHERE type = 'Movie'  -- Apply early filter
+)
+SELECT 
+    N1.release_year, 
+    N1.genre AS Genre1, 
+    N2.genre AS Genre2,  
+    COUNT(*) AS Similar_Movies
+FROM 
+    Netflix_Cleaned N1  
+JOIN 
+    Netflix_Cleaned N2  
+ON  
+    N1.release_year = N2.release_year  
+    AND N1.language = N2.language  
+    AND N1.genre < N2.genre  -- Avoid duplicates
+    AND N1.duration_minutes BETWEEN (N2.duration_minutes - 5) AND (N2.duration_minutes + 5)  -- Optimized range filter
+GROUP BY N1.release_year, Genre1, Genre2  
+ORDER BY Similar_Movies DESC;
