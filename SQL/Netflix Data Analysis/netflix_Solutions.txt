@@ -298,3 +298,64 @@ ON
     AND N1.duration_minutes BETWEEN (N2.duration_minutes - 5) AND (N2.duration_minutes + 5)  -- Optimized range filter
 GROUP BY N1.release_year, Genre1, Genre2  
 ORDER BY Similar_Movies DESC;
+
+25.
+select N1.title, N2.title from 
+`netflix_data.netflix` N1
+join `netflix_data.netflix` N2
+on N1.country < N2.country
+and N1.title < N2.title
+where
+ABS(N1.dislikes - N2.dislikes) <= 500
+and N1.type = 'Movie' and N2.type = 'Movie'
+order by 1, 2
+
+26.
+select N1.language, N2.language,N1.genre, count(*) as No_of_Movies
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on N1.genre = N2.genre
+and N1.language < N2.language
+where N1.type = 'Movie' and N2.type = 'Movie'
+group by 1, 2, N1.genre
+order by 3 desc;
+
+27.
+select N1.title as Movie1 , N2.title , N1.subscribed_users
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 
+on N1.country < N2.country
+and N1.subscribed_users = N2.subscribed_users
+where N1.type = 'Movie' and N2.type = 'Movie'
+order by 3 desc;
+
+28.
+select title, count(*) from `netflix_data.netflix`
+where type = 'Movie'
+group by 1
+having count(distinct release_year) > 1
+or count(distinct rating) > 1
+or count(distinct duration) > 1
+or count(distinct language) >1
+order by 2 desc;
+
+29.
+SELECT DISTINCT N1.title, N1.release_year AS First_Decade, N2.release_year AS Second_Decade
+FROM `netflix_data.netflix` N1
+JOIN `netflix_data.netflix` N2 
+ON N1.title = N2.title 
+AND FLOOR(N1.release_year / 10) * 10 != FLOOR(N2.release_year / 10) * 10
+WHERE N1.is_trending = TRUE AND N2.is_trending = TRUE 
+AND N1.release_year < N2.release_year
+ORDER BY N1.title;
+
+
+30.
+select distinct N1.title, N2.title
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2
+on extract(year from N1.added_to_platform_date) = extract(year from N2.added_to_platform_date)
+and N1.title < N2.title
+where N1.is_trending = TRUE and N2.is_trending = TRUE
+and N1.type = 'Movie' and N2.type = 'Movie'
+group by 1, 2
+having COUNT(DISTINCT extract(year from N1.added_to_platform_date)) > 3
