@@ -1,23 +1,23 @@
-1.
+1.Find pairs of titles released in the same year, have the same genre, but are from different platforms.
 select N1.title as Title_1, N2.title as Title_2, 
 #N1.release_year, N2.release_year, N1.genre, N2.genre, N1.platform , N2.platform 
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on N1.release_year = N2.release_year
 and N1.genre = N2.genre and N1.platform != N2.platform and N1.title != N2.title
 
-2. 
+2. Identify movies or shows with the same title but different release years.
 select distinct N1.title as Title_1,
 #N2.title, N1.release_year, N2.release_year
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on N1.release_year != N2.release_year and N1.title = N2.title
 
-3.
+3.Retrieve titles that have been trending at least twice and find their first and last trending dates.
 select title,min(added_to_platform_date) as First_Trending_Date, max(added_to_platform_date) as Last_Trending_Date from `netflix_data.netflix`
 where is_trending = true
 group by title
 having count(*) >= 2 ;
 
-4.
+4.Find movies that share the same genre and have similar engagement scores (views + likes - dislikes).
 select distinct N1.title as title
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on N1.genre = N2.genre and (N1.views + N1.likes - N1.dislikes) = (N2.views + N2.likes - N2.dislikes)
@@ -25,21 +25,21 @@ and N1.title != N2.title
 where N1.type = 'Movie' or N2.type = 'Movie'
 
 
-5.
+5.Identify pairs of movies that have the same duration but different platforms.
 select distinct N1.title as title_1, N2.title as title_2
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on N1.duration = N2.duration and N1.platform != N2.platform 
 and N1.title != N2.title
 where N1.type = 'Movie' or N2.type = 'Movie';
 
-6.
+6.Retrieve titles with nearly the same number of views (difference of fewer than 1000 views).
 select N1.title, N2.title, ABS(N1.views - N2.views) as View_Diff
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on N1.id != N2.id and ABS(N1.views - N2.views) < 1000
 order by 3 asc;
 
 
-7.
+7.Find out which countries have the highest number of similar movies released in the same year.
 with yearly_data as (
 select N1.country, N1.release_year, count(distinct N1.id) as No_of_Movies
 from `netflix_data.netflix` N1
@@ -59,7 +59,7 @@ country, release_year
 from ranked_data where rnk = 1
 order by 2 DESC;
 
-8.
+8.Determine platform pairs that share the most common titles.
 /* 
 If we dont use least, greatest or case then we observe same row twice e.g 
 netflix hotstart 2000 
@@ -89,7 +89,7 @@ GROUP BY 1,2
 ORDER BY 3 DESC;
 
 
-9.
+9.Identify titles that have been released in multiple languages by comparing entries in the dataset.
 SELECT DISTINCT title
 FROM `netflix_data.netflix` N1
 WHERE EXISTS (
@@ -107,7 +107,7 @@ from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 
 on N1.title = N2.title and N1.language < N2.language;
 
-10.
+10.Find the oldest movie or show that has a newer version with the same title.
 select distinct title 
 from `netflix_data.netflix` N1
 where EXISTS (
@@ -120,7 +120,7 @@ from `netflix_data.netflix`
 where N1.title = N2.title and  
 N1.release_year > N2.release_year);
 
-11.
+11.Identify movies with identical engagement scores but different countries of release.
 select * from 
 `netflix_data.netflix` N1 
 join `netflix_data.netflix` N2 on N1.country != N2.country
@@ -128,7 +128,7 @@ and (N1.likes + N1.views - N1.dislikes) = (N2.likes + N2.views - N2.dislikes)
 and N1.title < N2.title
 where  N1.type = 'Movies' ;
 
-12.
+12.Find all TV shows that have at least one movie of the same name in the dataset.
 select distinct title from `netflix_data.netflix` T
 where exists
 (
@@ -142,14 +142,14 @@ FROM `netflix_data.netflix` T
 JOIN `netflix_data.netflix` M ON T.title = M.title
 WHERE T.type = 'TV Show'AND M.type = 'Movie';
 
-13.
+13.Identify all genres that have at least 20 trending titles in the same year.
 select distinct genre
 from `netflix_data.netflix` 
 where is_trending = true
 group by extract(YEAR from added_to_platform_date),genre
 having count(*) >=20
 
-14.
+14.Find all movies that were trending together at least once.
 select N1.title as Movie1, N2.title as Movie2
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on 
@@ -158,14 +158,14 @@ and N1.title < N2.title
 where N1.type = 'Movie' and N2.type = 'Movie'
 and N1.is_trending = true and N2.is_trending = true;
 
-15.
+15.Identify movies or shows that have been re-released with a different rating.
 select distinct N2.title
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on 
 N1.title = N2.title and N1.release_year < N2.release_year
 and N1.rating != N2.rating
 
-16.
+16.Find movies released on the same platform, in the same year, with a similar number of likes.
 select  N1.title, N2.title
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on 
@@ -173,7 +173,7 @@ N1.title < N2.title and N1.platform = N2.platform
 and N1.release_year = N2.release_year and N1.likes = N2.likes
 where N1.type = 'Movie' and N2.type = 'Movie';
 
-17.
+17.Identify movies that have similar durations but different genres.
 select  distinct N1.title, N2.title
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on 
@@ -181,7 +181,7 @@ N1.title < N2.title and N1.duration = N2.duration
 and N1.genre != N2.genre
 where N1.type = 'Movie' and N2.type = 'Movie';
 
-18.
+18.Retrieve pairs of movies that were released in the same country and have similar engagement.
 select  distinct N1.title, N2.title
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on 
@@ -190,7 +190,7 @@ and N1.country = N2.country
 and (N1.likes + N1.views - N1.dislikes) = (N2.likes + N2.views - N2.dislikes)
 where N1.type = 'Movie' and N2.type = 'Movie';
 
-19.
+19.Identify trending titles that were first added to the platform in the same month and year.
 select  distinct N1.title, N2.title
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on 
@@ -198,7 +198,7 @@ N1.title < N2.title
 and format_datetime('%Y-%m',N1.added_to_platform_date) =  format_datetime('%Y-%m',N2.added_to_platform_date)
 where N1.is_trending = true and N2.is_trending = true
 
-20.
+20.Find all movies that were released in the same country, have the same language, and a rating difference of only one level.
 #Since we dont have clear rating in numbers, we will assign categories a Number & write Query according to that.
 with cts_numbered_rating as (
   select *,
@@ -220,7 +220,7 @@ and abs(N1.numbered_Rating - N2.numbered_Rating) = 1
 and N1.title < N2.title
 where N1.type = 'Movie' and N2.type = 'Movie'
 
-21.
+21.Retrieve the most common pair of movies that are often trending together.
 select N1.title , N2.title,
 #N1.added_to_platform_date, N1.is_trending, N2.added_to_platform_date, N2.is_trending , N1.type, N2.type
 from `netflix_data.netflix` N1
@@ -230,7 +230,7 @@ and N1.title < N2.title
 Where N1.is_trending = true and N2.is_trending = true
 and N1.type = 'Movie'and N2.type = 'Movie'
 
-22.
+22.Find all movies that were released in the same decade and have nearly the same number of views.
 # We dont have direct function to extrct DECADE from date & hence we used a little calculation.
 # Questions also asked about near same views, hence we considered the view diffrence less than 500 (Subjective)
 select N1.title, N2.title from `netflix_data.netflix` N1
@@ -239,7 +239,7 @@ cast(floor(extract(YEAR from N1.added_to_platform_date)/10)*10 as int) = cast(fl
 and ABS(N1.views - N2.views) < 500 and N1.title < N2.title
 where N1.type = 'Movie' AND N2.type = 'Movie';
 
-23.
+23.Identify pairs of movies that have nearly the same number of subscribers but belong to different platforms.
 select N1.title, N2.title from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on 
 N1.platform != N2.platform and 
@@ -248,7 +248,7 @@ where
 ABS(N1.subscribed_users - N2.subscribed_users) <= 500
 and N1.type = "Movie" and N2.type = 'Movie';
 
-24.
+24.Find out which genres tend to have the most similar movies released in the same year.
 select 
 N1.genre, N2.genre, 
 count(*) as similiar_movies
@@ -299,7 +299,7 @@ ON
 GROUP BY N1.release_year, Genre1, Genre2  
 ORDER BY Similar_Movies DESC;
 
-25.
+25.Retrieve all movies that have nearly the same number of dislikes as another movie from a different country.
 select N1.title, N2.title from 
 `netflix_data.netflix` N1
 join `netflix_data.netflix` N2
@@ -310,7 +310,7 @@ ABS(N1.dislikes - N2.dislikes) <= 500
 and N1.type = 'Movie' and N2.type = 'Movie'
 order by 1, 2
 
-26.
+26.Identify the most common language pairs in movies that share the same genre.
 select N1.language, N2.language,N1.genre, count(*) as No_of_Movies
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 on N1.genre = N2.genre
@@ -319,7 +319,7 @@ where N1.type = 'Movie' and N2.type = 'Movie'
 group by 1, 2, N1.genre
 order by 3 desc;
 
-27.
+27.Find pairs of movies released in different countries but with the same number of subscribers.
 select N1.title as Movie1 , N2.title , N1.subscribed_users
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2 
@@ -328,7 +328,7 @@ and N1.subscribed_users = N2.subscribed_users
 where N1.type = 'Movie' and N2.type = 'Movie'
 order by 3 desc;
 
-28.
+28.Identify all movies with at least two different records in the dataset due to re-releases or edits.
 select title, count(*) from `netflix_data.netflix`
 where type = 'Movie'
 group by 1
@@ -338,7 +338,7 @@ or count(distinct duration) > 1
 or count(distinct language) >1
 order by 2 desc;
 
-29.
+29.Retrieve pairs of trending titles that were first introduced in different decades.
 SELECT DISTINCT N1.title, N1.release_year AS First_Decade, N2.release_year AS Second_Decade
 FROM `netflix_data.netflix` N1
 JOIN `netflix_data.netflix` N2 
@@ -349,7 +349,7 @@ AND N1.release_year < N2.release_year
 ORDER BY N1.title;
 
 
-30.
+30.Identify movies that were trending together in at least three different years.
 select distinct N1.title, N2.title
 from `netflix_data.netflix` N1
 join `netflix_data.netflix` N2
@@ -359,3 +359,24 @@ where N1.is_trending = TRUE and N2.is_trending = TRUE
 and N1.type = 'Movie' and N2.type = 'Movie'
 group by 1, 2
 having COUNT(DISTINCT extract(year from N1.added_to_platform_date)) > 3
+
+31. Find out which platform has the highest number of repeated titles across years.
+32. Identify pairs of movies that were added to platforms within the same month but have different engagement scores.
+33. Find out which platforms share the most titles with identical names but different years.
+34. Identify movies that have similar engagement scores but were released in different decades.
+35. Retrieve all pairs of movies where one is a sequel to another based on year and similar title.
+36. Identify the most common title across platforms by using self-joins.
+37. Find all movies that were added to platforms more than once due to changes in metadata.
+38. Retrieve all movies that have been trending together in more than one decade.
+39. Identify movies released in the same country but on different platforms with similar total engagement.
+40. Find all movies that have similar numbers of views but completely different genres.
+41. Identify movies with nearly the same number of likes but vastly different dislike counts.
+42. Find out which platform has the highest number of identical movies based on self-joins.
+43. Retrieve all movies that were first added to the platform in the same year and have the same rating.
+44. Identify the top 5 most common movie pairs that have similar durations but different platforms.
+45. Find all movies that have nearly the same number of subscribers but vastly different ratings.
+46. Identify pairs of movies that were first introduced on Netflix and later appeared on another platform.
+47. Retrieve movies that were released in the same country and have a nearly identical duration.
+48. Find all TV shows that have a movie version with the same title but different engagement levels.
+49. Identify all movies that were trending together exactly twice in different years.
+50. Find out which decade had the most similar movies based on engagement score and genre.
