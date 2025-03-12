@@ -20,7 +20,7 @@ This project contain different SKILL PROJECTS which are build to improve profici
 <tr>
     <td>3</td>
     <td>Python</td>
-    <td><a href='https://github.com/priyeshyadav/Skill_Projects/tree/main/Python' target="_blank"> Python 100 Questions </a></td>
+    <td><a href='https://github.com/priyeshyadav/Skill_Projects/tree/main/Python/Python%20100%20Questions' target="_blank"> Python 100 Questions </a></td>
 </tr>
 <tr>
     <td></td>
