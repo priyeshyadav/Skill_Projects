@@ -18,6 +18,11 @@ This project contain different SKILL PROJECTS which are build to improve profici
     <td><a href='https://github.com/priyeshyadav/Skill_Projects/tree/main/SQL/Netflix%20Data%20Analysis' target="_blank"> NetFlix </a></td>
 </tr>
 <tr>
+    <td>3</td>
+    <td>Python</td>
+    <td><a href='https://github.com/priyeshyadav/Skill_Projects/tree/main/Python' target="_blank"> Python 100 Questions </a></td>
+</tr>
+<tr>
     <td></td>
     <td></td>
     <td></td>
