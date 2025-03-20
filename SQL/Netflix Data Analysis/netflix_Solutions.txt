@@ -361,7 +361,33 @@ group by 1, 2
 having COUNT(DISTINCT extract(year from N1.added_to_platform_date)) > 3
 
 31. Find out which platform has the highest number of repeated titles across years.
+select platform, count_of_title from (
+select N1.platform, N1.title, count(*) as count_of_title,
+dense_rank() over(order by count(*) desc ) as rnk
+from
+`netflix_data.netflix` N1
+join `netflix_data.netflix` N2
+on N1.platform = N2.platform 
+and N1.title = N2.title 
+and extract(year from N1.added_to_platform_date) <> extract(year from N2.added_to_platform_date)
+group by 1,2
+)
+where rnk <=5
+order by rnk asc
+
+
 32. Identify pairs of movies that were added to platforms within the same month but have different engagement scores.
+select N1.title, N2.title
+from `netflix_data.netflix` N1
+join `netflix_data.netflix` N2 on 
+N1.platform = N2.platform
+and extract(year from N1.added_to_platform_date) = extract(year from N2.added_to_platform_date)
+and extract(month from N1.added_to_platform_date) = extract(month from N2.added_to_platform_date)
+and N1.title < N2.title
+where N1.type = "Movie" and N2.type = 'Movie'
+and ABS((N1.likes + N1.views - N1.dislikes) - (N2.likes + N2.views - N2.dislikes)) < 500
+
+
 33. Find out which platforms share the most titles with identical names but different years.
 34. Identify movies that have similar engagement scores but were released in different decades.
 35. Retrieve all pairs of movies where one is a sequel to another based on year and similar title.
