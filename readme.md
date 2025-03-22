@@ -23,8 +23,8 @@ This project contain different SKILL PROJECTS which are build to improve profici
     <td><a href='https://github.com/priyeshyadav/Skill_Projects/tree/main/Python/Python%20100%20Questions' target="_blank"> Python 100 Questions </a></td>
 </tr>
     <tr>
-    <td></td>
-    <td></td>
+    <td>4</td>
+    <td>Python</td>
     <td><a href='https://github.com/priyeshyadav/Skill_Projects/tree/main/Python/GeekforGeek%20-%2025%20OOPs%20Questions' target="_blank"> Python 25 OOPS Questions </a></td>
 </tr>
     <tr>
